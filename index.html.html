@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Aviator Crash Game</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-900 text-white font-sans">
+  <!-- Navbar -->
+  <header class="p-6 flex justify-between items-center bg-gray-800">
+    <h1 class="text-2xl font-bold text-red-500">Aviator Bet</h1>
+    <nav class="space-x-6 text-gray-300">
+      <a href="#play" class="hover:text-red-400">Play</a>
+      <a href="#how" class="hover:text-red-400">How It Works</a>
+      <a href="#contact" class="hover:text-red-400">Contact</a>
+    </nav>
+  </header>
+
+  <!-- Hero -->
+  <section class="text-center py-20 bg-gradient-to-b from-gray-900 to-gray-800">
+    <h2 class="text-5xl font-extrabold mb-4">Fly High. Bet Smart.</h2>
+    <p class="text-lg mb-6 text-gray-300">Experience the thrill of the Aviator crash game – try your luck, cash out before it's too late!</p>
+    <a href="#play" class="bg-red-500 hover:bg-red-600 px-6 py-3 rounded-full text-lg font-semibold transition">Start Playing</a>
+  </section>
+
+  <!-- Game Section -->
+  <section id="play" class="py-16 px-4 max-w-3xl mx-auto text-center">
+    <h3 class="text-3xl font-semibold mb-6">Crash Game Simulator</h3>
+
+    <div class="bg-black p-6 rounded-lg border border-gray-700 shadow-lg">
+      <div class="text-4xl font-bold mb-4 text-green-400" id="multiplier">1.00x</div>
+
+      <div class="flex flex-col md:flex-row justify-center items-center space-y-4 md:space-y-0 md:space-x-4 mb-4">
+        <input type="number" id="betInput" placeholder="Enter Bet" class="px-4 py-2 rounded w-40 text-black" min="1" max="9999" value="100" />
+        <button onclick="startGame()" id="startBtn" class="bg-red-500 hover:bg-red-600 px-4 py-2 rounded">Start</button>
+        <button onclick="cashOut()" id="cashOutBtn" class="bg-yellow-500 hover:bg-yellow-600 px-4 py-2 rounded" disabled>Cash Out</button>
+      </div>
+
+      <p class="text-sm text-gray-300 mb-2">Balance: <span id="balance">1000</span> coins</p>
+      <p id="statusText" class="text-gray-400 mt-2"></p>
+    </div>
+  </section>
+
+  <!-- How It Works -->
+  <section id="how" class="py-20 bg-gray-800 text-center px-6">
+    <h3 class="text-3xl font-bold mb-8">How It Works</h3>
+    <div class="grid md:grid-cols-3 gap-6 text-left max-w-5xl mx-auto">
+      <div>
+        <h4 class="text-xl font-semibold mb-2">1. Place Your Bet</h4>
+        <p class="text-gray-300">Choose how much to bet using your fake balance.</p>
+      </div>
+      <div>
+        <h4 class="text-xl font-semibold mb-2">2. Watch the Multiplier</h4>
+        <p class="text-gray-300">The plane climbs higher... and so does your potential win.</p>
+      </div>
+      <div>
+        <h4 class="text-xl font-semibold mb-2">3. Cash Out in Time</h4>
+        <p class="text-gray-300">Click "Cash Out" before the crash to keep your winnings!</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer id="contact" class="bg-gray-800 py-6 text-center text-sm text-gray-500">
+    <p>&copy; 2025 Aviator Bet. No real money involved. For demo purposes only.</p>
+    <p>Contact: demo@aviatorbet.com</p>
+  </footer>
+
+  <!-- Game Logic -->
+  <script>
+    let multiplier = 1.00;
+    let interval;
+    let crashed = false;
+    let cashedOut = false;
+    let balance = 1000;
+    let currentBet = 0;
+
+    function updateBalanceDisplay() {
+      document.getElementById("balance").textContent = balance;
+    }
+
+    function startGame() {
+      currentBet = parseInt(document.getElementById("betInput").value);
+      if (isNaN(currentBet) || currentBet <= 0 || currentBet > balance) {
+        alert("Invalid bet amount!");
+        return;
+      }
+
+      multiplier = 1.00;
+      crashed = false;
+      cashedOut = false;
+      document.getElementById("multiplier").textContent = "1.00x";
+      document.getElementById("multiplier").classList.remove("text-red-500");
+      document.getElementById("multiplier").classList.add("text-green-400");
+      document.getElementById("statusText").textContent = "";
+
+      document.getElementById("startBtn").disabled = true;
+      document.getElementById("cashOutBtn").disabled = false;
+
+      balance -= currentBet;
+      updateBalanceDisplay();
+
+      const crashAt = (Math.random() * 8 + 1.2).toFixed(2);
+
+      interval = setInterval(() => {
+        if (crashed || cashedOut) return;
+
+        multiplier = (multiplier + 0.03 + multiplier * 0.01).toFixed(2);
+        document.getElementById("multiplier").textContent = multiplier + "x";
+
+        if (parseFloat(multiplier) >= parseFloat(crashAt)) {
+          crashGame();
+        }
+      }, 100);
+    }
+
+    function cashOut() {
+      if (crashed || cashedOut) return;
+
+      cashedOut = true;
+      clearInterval(interval);
+      const winnings = Math.floor(currentBet * parseFloat(multiplier));
+      balance += winnings;
+
+      updateBalanceDisplay();
+      document.getElementById("statusText").textContent = "✅ You cashed out at " + multiplier + "x and won " + winnings + " coins!";
+      document.getElementById("cashOutBtn").disabled = true;
+      document.getElementById("startBtn").disabled = false;
+    }
+
+    function crashGame() {
+      crashed = true;
+      clearInterval(interval);
+      document.getElementById("statusText").textContent = "💥 Crashed at " + multiplier + "x. You lost " + currentBet + " coins.";
+      document.getElementById("multiplier").classList.remove("text-green-400");
+      document.getElementById("multiplier").classList.add("text-red-500");
+      document.getElementById("cashOutBtn").disabled = true;
+      document.getElementById("startBtn").disabled = false;
+      updateBalanceDisplay();
+    }
+
+    updateBalanceDisplay();
+  </script>
+</body>
+</html>
